@@ -15,12 +15,25 @@ class LimitedTabPageViewController: TabPageViewController {
         super.init()
         let vc1 = UIViewController()
         vc1.view.backgroundColor = UIColor.white
-        let vc2 = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ListViewController")
-        tabItems = [(vc1, "First"), (vc2, "Second")]
-        option.tabWidth = view.frame.width / CGFloat(tabItems.count)
+        tabItems = [(vc1, "First")]
+        option.tabWidth = UIScreen.main.bounds.width / CGFloat(tabItems.count)
         option.hidesTopViewOnSwipeType = .all
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "test", style: .plain, target: self, action: #selector(reload))
+    }
 
+    @objc func reload() {
+        let vc2 = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ListViewController")
+        tabItems.append((vc2, "Second"))
+
+        option.tabWidth = UIScreen.main.bounds.width / CGFloat(tabItems.count)
+
+        self.loadControllers()
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

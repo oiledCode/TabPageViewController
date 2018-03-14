@@ -27,10 +27,11 @@ open class TabPageViewController: UIPageViewController {
         return self.view.bounds.width
     }
     fileprivate var shouldScrollCurrentBar: Bool = true
-    lazy fileprivate var tabView: TabView = self.configuredTabView()
+    fileprivate var tabView:TabView?
     fileprivate var statusView: UIView?
     fileprivate var statusViewHeightConstraint: NSLayoutConstraint?
     fileprivate var tabBarTopConstraint: NSLayoutConstraint?
+    fileprivate var tabViewHeightConstraint: NSLayoutConstraint?
 
     public init() {
         super.init(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
@@ -42,29 +43,41 @@ open class TabPageViewController: UIPageViewController {
 
     override open func viewDidLoad() {
         super.viewDidLoad()
-
+        loadControllers()
+    }
+    
+    public func loadControllers() {
         setupPageViewController()
         setupScrollView()
         updateNavigationBar()
+        
+        option.tabHeight = tabItems.count <= 1 ? 0.0 : 32.0
+        
+        if tabView == nil {
+            tabView = configuredTabView()
+        } else {
+            tabView!.removeFromSuperview()
+            tabView! = configuredTabView()
+
+//            tabView = nil
+//            tabViewHeightConstraint?.constant = option.tabHeight
+        }
+        
+        if let currentIndex = currentIndex , isInfinity {
+            tabView!.updateCurrentIndex(currentIndex, shouldScroll: true)
+        }
     }
 
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
-        if tabView.superview == nil {
-            tabView = configuredTabView()
-        }
-
-        if let currentIndex = currentIndex , isInfinity {
-            tabView.updateCurrentIndex(currentIndex, shouldScroll: true)
-        }
+        print()
     }
 
     override open func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         updateNavigationBar()
-        tabView.layouted = true
+        tabView?.layouted = true
     }
 
     override open func viewWillDisappear(_ animated: Bool) {
@@ -98,7 +111,7 @@ public extension TabPageViewController {
             completion: completion)
 
         guard isViewLoaded else { return }
-        tabView.updateCurrentIndex(index, shouldScroll: true)
+        tabView?.updateCurrentIndex(index, shouldScroll: true)
     }
 }
 
@@ -142,14 +155,14 @@ extension TabPageViewController {
         let tabView = TabView(isInfinity: isInfinity, option: option)
         tabView.translatesAutoresizingMaskIntoConstraints = false
 
-        let height = NSLayoutConstraint(item: tabView,
+        tabViewHeightConstraint = NSLayoutConstraint(item: tabView,
                                         attribute: .height,
                                         relatedBy: .equal,
                                         toItem: nil,
                                         attribute: .height,
                                         multiplier: 1.0,
                                         constant: option.tabHeight)
-        tabView.addConstraint(height)
+        tabView.addConstraint(tabViewHeightConstraint!)
         view.addSubview(tabView)
 
         let top = NSLayoutConstraint(item: tabView,
@@ -336,19 +349,19 @@ extension TabPageViewController: UIPageViewControllerDelegate {
 
     public func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
         shouldScrollCurrentBar = true
-        tabView.scrollToHorizontalCenter()
+        tabView?.scrollToHorizontalCenter()
 
         // Order to prevent the the hit repeatedly during animation
-        tabView.updateCollectionViewUserInteractionEnabled(false)
+        tabView?.updateCollectionViewUserInteractionEnabled(false)
     }
 
     public func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
         if let currentIndex = currentIndex , currentIndex < tabItemsCount {
-            tabView.updateCurrentIndex(currentIndex, shouldScroll: false)
+            tabView?.updateCurrentIndex(currentIndex, shouldScroll: false)
             beforeIndex = currentIndex
         }
 
-        tabView.updateCollectionViewUserInteractionEnabled(true)
+        tabView?.updateCollectionViewUserInteractionEnabled(true)
     }
 }
 
@@ -377,10 +390,10 @@ extension TabPageViewController: UIScrollViewDelegate {
         }
 
         let scrollOffsetX = scrollView.contentOffset.x - view.frame.width
-        tabView.scrollCurrentBarView(index, contentOffsetX: scrollOffsetX)
+        tabView?.scrollCurrentBarView(index, contentOffsetX: scrollOffsetX)
     }
 
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        tabView.updateCurrentIndex(beforeIndex, shouldScroll: true)
+        tabView?.updateCurrentIndex(beforeIndex, shouldScroll: true)
     }
 }
