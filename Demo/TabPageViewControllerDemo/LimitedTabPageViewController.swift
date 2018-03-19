@@ -27,7 +27,7 @@ class LimitedTabPageViewController: TabPageViewController {
 
     @objc func reload() {
         let vc2 = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ListViewController")
-        tabItems.append((vc2, "Second"))
+        tabItems.append((vc2, "second"))
 
         option.tabWidth = UIScreen.main.bounds.width / CGFloat(tabItems.count)
 
